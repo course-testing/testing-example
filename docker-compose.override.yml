@@ -1,0 +1,14 @@
+version: '3'
+services:
+    php:
+        environment:
+#            # Enable it if you want enable XDebug extension
+            PHP_EXT_XDEBUG: 'True'
+#            # Enable it to colorize terminal output
+            TERM: xterm-color
+#        # Enable it to forward container ports to your host interfaces
+        ports:
+            - "8000:8000"
+        volumes:
+            # Uncomment to bind your home dir to container home dir
+            - ${HOME}:/home/vagrant/

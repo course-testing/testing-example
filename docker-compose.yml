@@ -1,0 +1,31 @@
+version: '3'
+services:
+    php:
+        build:
+            context: .
+            dockerfile: 'dockerfile'
+        env_file:
+            - docker-compose.env
+        environment:
+            SSH_AUTH_SOCK: /tmp/ssh-agent.sock
+        volumes:
+            - ./:/var/www/api/
+            - ${SSH_AUTH_SOCK}:/tmp/ssh-agent.sock
+        working_dir: /var/www/api/
+        hostname: php-serv
+        dns:
+            - 8.8.8.8
+        ports:
+            - 8000:8000
+    db:
+        image: mysql
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - "8090:8080"
