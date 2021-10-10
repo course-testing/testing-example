@@ -1,4 +1,7 @@
 {
+    "aeon-php/calendar": {
+        "version": "1.0.1"
+    },
     "api-platform/core": {
         "version": "2.5",
         "recipe": {
@@ -12,6 +15,12 @@
             "config/routes/api_platform.yaml",
             "src/Entity/.gitignore"
         ]
+    },
+    "coduo/php-matcher": {
+        "version": "6.0.7"
+    },
+    "coduo/php-to-string": {
+        "version": "3.2.0"
     },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.4"
