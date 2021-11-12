@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ProductResourceTest extends ApiTestCase
 {
     use RefreshDatabaseTrait; // oczywiście można dodawać fixtury przez Doctrine tylko trzeba pamiętać żeby to czyścić
-    use PHPMatcherAssertions; // composer require --dev "coduo/php-matcher"
+    use PHPMatcherAssertions; // composer require --dev "coduo/php-matcher" || https://github.com/coduo/php-matcher
 
     public function test_get_product_that_not_exists(): void
     {
@@ -36,18 +36,32 @@ class ProductResourceTest extends ApiTestCase
         ]);
 
         // When I get product
-        $client->request('GET', $iri);
+        $response = $client->request('GET', $iri);
 
         // Then
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'id' => 1,
-            'price' => [
-                'amount' => 1000,
-                'currency' => 'PLN'
+        $this->assertMatchesPattern([
+                "@context" => "/api/contexts/products",
+                "@id" => "/api/products/1",
+                "@type" => "products",
+                "id" => 1,
+                "price" => [
+                    "@type" => "Money",
+                    "@id" => "_:1148",
+                    "amount" => 1000,
+                    "currency" => "PLN",
+                ],
+                "name" => "__PRODUCT_1__",
+                "category" => [
+                    0 => "main"
+                ],
+                "created" => "@datetime@",
             ],
-            'category' => ['main'],
-            'created' => '2021-11-12T06:13:35+00:00'
-        ]);
+            $response->toArray()
+        );
+
+        // zalety: testujemy cały response, test nie przejdzie po dodaniu nowego pola
+        // wady: testujemy cały response, jeśli interesuje nas tylko wycinek musimy podać wszystkie pola lub użyć
+        // matchera dla konkretnej wartości - test wygląda mniej spójnie
     }
 }
