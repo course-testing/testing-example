@@ -43,6 +43,16 @@ class Product
      */
     private $name;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $created;
+
+    /**
+     * @ORM\Column(type="array")
+     */
+    private $category = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -56,6 +66,30 @@ class Product
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getCreated(): ?\DateTimeInterface
+    {
+        return $this->created;
+    }
+
+    public function setCreated(\DateTimeInterface $created): self
+    {
+        $this->created = $created;
+
+        return $this;
+    }
+
+    public function getCategory(): ?array
+    {
+        return $this->category;
+    }
+
+    public function setCategory(array $category): self
+    {
+        $this->category = $category;
 
         return $this;
     }

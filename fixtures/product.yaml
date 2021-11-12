@@ -2,6 +2,9 @@ App\Entity\Product:
   product_{1}:
     name: __PRODUCT_1__
     price: '@price_1'
+    category:
+      - main
+    created: '<date_create()>'
 
 App\Entity\VO\Money:
   price_{1}:

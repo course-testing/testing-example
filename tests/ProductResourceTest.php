@@ -26,26 +26,28 @@ class ProductResourceTest extends ApiTestCase
 
     public function test_get_product(): void
     {
-        //we should create client firstly because of createClient call bootKernel
+        // we should create client firstly because of createClient call bootKernel
         $client = static::createClient();
 
-        //Given There is product
-        //api/fixtures/product.yaml
+        // Given There is product
+        // api/fixtures/product.yaml
         $iri = $this->findIriBy(Product::class, [
             'name' => '__PRODUCT_1__'
         ]);
 
-        //When I get product
+        // When I get product
         $client->request('GET', $iri);
 
-        //Then
+        // Then
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'id' => 1,
             'price' => [
                 'amount' => 1000,
                 'currency' => 'PLN'
-            ]
+            ],
+            'category' => ['main'],
+            'created' => '2021-11-12T06:13:35+00:00'
         ]);
     }
 }
