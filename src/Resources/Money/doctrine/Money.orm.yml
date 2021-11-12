@@ -1,0 +1,8 @@
+App\Entity\VO\Money:
+  type: embeddable
+  fields:
+    amount:
+      type: integer
+    currency:
+      type: string
+      length: 3

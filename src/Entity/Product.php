@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use App\Entity\VO\Money;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -21,6 +22,21 @@ class Product
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * @ORM\Embedded(class="App\Entity\VO\Money")
+     */
+    private $price;
+
+    public function getPrice(): Money
+    {
+        return $this->price;
+    }
+
+    public function setPrice(Money $price): void
+    {
+        $this->price = $price;
+    }
 
     /**
      * @ORM\Column(type="string", length=255)

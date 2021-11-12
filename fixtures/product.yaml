@@ -1,3 +1,9 @@
 App\Entity\Product:
   product_{1}:
     name: __PRODUCT_1__
+    price: '@price_1'
+
+App\Entity\VO\Money:
+  price_{1}:
+    amount: 1000
+    currency: 'PLN'

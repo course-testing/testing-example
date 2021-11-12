@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductResourceTest extends ApiTestCase
 {
-    use RefreshDatabaseTrait;
-    use PHPMatcherAssertions;
+    use RefreshDatabaseTrait; // oczywiście można dodawać fixtury przez Doctrine tylko trzeba pamiętać żeby to czyścić
+    use PHPMatcherAssertions; // composer require --dev "coduo/php-matcher"
 
     public function test_get_product_that_not_exists(): void
     {
@@ -24,8 +24,6 @@ class ProductResourceTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
-    //można doawać to rpzez doctrina tylko trzeba pamiętać żeby to czyścić
-    // composer require --dev "coduo/php-matcher"
     public function test_get_product(): void
     {
         //we should create client firstly because of createClient call bootKernel
@@ -44,6 +42,10 @@ class ProductResourceTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'id' => 1,
+            'price' => [
+                'amount' => 1000,
+                'currency' => 'PLN'
+            ]
         ]);
     }
 }

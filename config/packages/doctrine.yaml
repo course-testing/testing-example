@@ -10,9 +10,14 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
         mappings:
+            App\Entity\VO\:
+                type: yml
+                dir: '%kernel.project_dir%/src/Resources/Money/doctrine'
+                prefix: 'App\Entity\VO'
             App:
                 is_bundle: false
                 type: annotation
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+
