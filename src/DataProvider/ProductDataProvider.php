@@ -7,6 +7,7 @@ use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\Product;
 use App\Entity\User;
+use App\Entity\VO\Money;
 
 class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProviderInterface, RestrictedDataProviderInterface
 {
@@ -26,13 +27,24 @@ class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProvide
             return null;
         }
 
-        $item->setFormattedPrice('10 zł');
+        $item->setFormattedPrice($this->formatPrice($item->getPrice()));
         return $item;
     }
 
     public function supports(string $resourceClass, string $operationName = null, array $context = []): bool
     {
         return $resourceClass === Product::class;
+    }
+
+    private function formatPrice(Money $money): string
+    {
+        $valueBase = (string) $money->amount;
+        $valueLength = strlen($valueBase);
+        $subunit = 2;
+        $baseFormatted = substr($valueBase, 0, $valueLength - $subunit);
+        $decimalDigits = substr($valueBase, $valueLength - $subunit);
+
+        return sprintf('%s.%s zł', $baseFormatted, $decimalDigits);
     }
 }
 
