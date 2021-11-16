@@ -103,4 +103,42 @@ class ProductResourceTest extends ApiTestCase
             $response->toArray()
         );
     }
+
+    public function test_get_product_USD(): void
+    {
+        // we should create client firstly because of createClient call bootKernel
+        $client = static::createClient();
+
+        // Given There is product
+        // api/fixtures/product.yaml
+        $iri = $this->findIriBy(Product::class, [
+            'name' => '__PRODUCT_USD__'
+        ]);
+
+        // When I get product
+        $response = $client->request('GET', $iri);
+
+        // Then
+        $this->assertResponseIsSuccessful();
+        $this->assertMatchesPattern([
+            "@context" => "/api/contexts/products",
+            "@id" => "/api/products/3",
+            "@type" => "products",
+            "id" => 3,
+            "price" => [
+                "@type" => "Money",
+                "@id" => "@string@",
+                "amount" => 3500,
+                "currency" => "USD",
+            ],
+            "formattedPrice" => '$ 35.00',
+            "name" => "__PRODUCT_USD__",
+            "category" => [
+                0 => "main"
+            ],
+            "created" => "@datetime@",
+        ],
+            $response->toArray()
+        );
+    }
 }

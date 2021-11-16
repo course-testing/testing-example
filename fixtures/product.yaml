@@ -11,6 +11,13 @@ App\Entity\Product:
     category:
       - main
     created: '<date_create()>'
+  product_{3}:
+    name: __PRODUCT_USD__
+    price: '@price_3'
+    category:
+      - main
+    created: '<date_create()>'
+
 
 App\Entity\VO\Money:
   price_{1}:
@@ -19,3 +26,6 @@ App\Entity\VO\Money:
   price_{2}:
     amount: 1500
     currency: 'PLN'
+  price_{3}:
+    amount: 3500
+    currency: 'USD'
