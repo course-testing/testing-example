@@ -47,10 +47,11 @@ class ProductResourceTest extends ApiTestCase
                 "id" => 1,
                 "price" => [
                     "@type" => "Money",
-                    "@id" => "_:1148",
+                    "@id" => "@string@",
                     "amount" => 1000,
                     "currency" => "PLN",
                 ],
+                "formattedPrice" => '10 zł',
                 "name" => "__PRODUCT_1__",
                 "category" => [
                     0 => "main"

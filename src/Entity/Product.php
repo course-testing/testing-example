@@ -53,6 +53,8 @@ class Product
      */
     private $category = [];
 
+    private $formattedPrice;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -92,5 +94,15 @@ class Product
         $this->category = $category;
 
         return $this;
+    }
+
+    public function getFormattedPrice(): string
+    {
+        return $this->formattedPrice;
+    }
+
+    public function setFormattedPrice(string $formattedPrice): void
+    {
+        $this->formattedPrice = $formattedPrice;
     }
 }
