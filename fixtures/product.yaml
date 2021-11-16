@@ -5,8 +5,17 @@ App\Entity\Product:
     category:
       - main
     created: '<date_create()>'
+  product_{2}:
+    name: __PRODUCT_2__
+    price: '@price_2'
+    category:
+      - main
+    created: '<date_create()>'
 
 App\Entity\VO\Money:
   price_{1}:
     amount: 1000
+    currency: 'PLN'
+  price_{2}:
+    amount: 1500
     currency: 'PLN'
