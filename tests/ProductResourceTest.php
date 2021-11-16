@@ -141,4 +141,7 @@ class ProductResourceTest extends ApiTestCase
             $response->toArray()
         );
     }
+
+    // uwydatnia się problem: testujemy znacznie więcej niż potrzeba, klasa testowa rośnie bardzo szybko,
+    // mamy dużo wolnych testów, dopisywanie kolejnych przypadków staje się niewygodne
 }
