@@ -27,3 +27,6 @@ services:
     App\DataProvider\ProductDataProvider:
         bind:
             $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
+
+    App\Service\BasicPriceFormatter: ~
+    App\Service\PriceFormatter\PriceFormatter: '@App\Service\BasicPriceFormatter'

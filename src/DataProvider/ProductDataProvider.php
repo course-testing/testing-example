@@ -7,15 +7,17 @@ use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\Product;
 use App\Entity\User;
-use App\Entity\VO\Money;
+use App\Service\PriceFormatter\PriceFormatter;
 
 class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProviderInterface, RestrictedDataProviderInterface
 {
-    private $itemDataProvider;
+    private ItemDataProviderInterface $itemDataProvider;
+    private PriceFormatter $priceFormatter;
 
-    public function __construct(ItemDataProviderInterface $itemDataProvider)
+    public function __construct(ItemDataProviderInterface $itemDataProvider, PriceFormatter $priceFormatter)
     {
         $this->itemDataProvider = $itemDataProvider;
+        $this->priceFormatter = $priceFormatter;
     }
 
     public function getItem(string $resourceClass, $id, string $operationName = null, array $context = [])
@@ -27,7 +29,7 @@ class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProvide
             return null;
         }
 
-        $item->setFormattedPrice($this->formatPrice($item->getPrice()));
+        $item->setFormattedPrice($this->priceFormatter->format($item->getPrice()));
         return $item;
     }
 
@@ -35,25 +37,5 @@ class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProvide
     {
         return $resourceClass === Product::class;
     }
-
-    // do not try it at home
-    // use library, eg. https://github.com/moneyphp/money | https://github.com/brick/money
-    private function formatPrice(Money $money): string
-    {
-        $map = [
-            'PLN' => fn ($base, $decimal) => sprintf('%s.%s zł', $base, $decimal),
-            'USD' => fn ($base, $decimal) => sprintf('$ %s.%s', $base, $decimal),
-        ];
-
-        $valueBase = (string) $money->amount;
-        $valueLength = strlen($valueBase);
-        $subunit = 2;
-        $baseFormatted = substr($valueBase, 0, $valueLength - $subunit);
-        $decimalDigits = substr($valueBase, $valueLength - $subunit);
-
-        return $map[$money->currency]($baseFormatted, $decimalDigits);
-    }
-
-    // SRP !
 }
 
