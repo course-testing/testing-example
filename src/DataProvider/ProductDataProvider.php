@@ -7,6 +7,7 @@ use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\Product;
 use App\Entity\User;
+use App\Entity\VO\Stats;
 use App\Service\PriceFormatter\PriceFormatter;
 
 class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProviderInterface, RestrictedDataProviderInterface
@@ -30,6 +31,13 @@ class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProvide
         }
 
         $item->setFormattedPrice($this->priceFormatter->format($item->getPrice()));
+
+        $stats = new Stats();
+        $stats->viewed = 1001;
+        $stats->addedToCart = 89;
+        $stats->bought = 43;
+        $item->setStats($stats);
+
         return $item;
     }
 

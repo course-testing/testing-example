@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Entity\VO\Money;
+use App\Entity\VO\Stats;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -28,16 +29,6 @@ class Product
      */
     private $price;
 
-    public function getPrice(): Money
-    {
-        return $this->price;
-    }
-
-    public function setPrice(Money $price): void
-    {
-        $this->price = $price;
-    }
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -52,6 +43,8 @@ class Product
      * @ORM\Column(type="array")
      */
     private $category = [];
+
+    private Stats $stats;
 
     private $formattedPrice;
 
@@ -104,5 +97,25 @@ class Product
     public function setFormattedPrice(string $formattedPrice): void
     {
         $this->formattedPrice = $formattedPrice;
+    }
+
+    public function getPrice(): Money
+    {
+        return $this->price;
+    }
+
+    public function setPrice(Money $price): void
+    {
+        $this->price = $price;
+    }
+
+    public function getStats(): Stats
+    {
+        return $this->stats;
+    }
+
+    public function setStats(Stats $stats): void
+    {
+        $this->stats = $stats;
     }
 }
