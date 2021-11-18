@@ -57,6 +57,13 @@ class ProductResourceTest extends ApiTestCase
                     0 => "main"
                 ],
                 "created" => "@datetime@",
+                'stats' => [
+                    "@type" => "Stats",
+                    "@id" => "@string@",
+                    'viewed' => 1001,
+                    'addedToCart' => 89,
+                    'bought' => 43
+                ]
             ],
             $response->toArray()
         );
