@@ -10,6 +10,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class EventLog
 {
+    const TYPE_VIEWED = 'VIEWED';
+    const TYPE_ADDED_TO_CART = 'ADDED_TO_CART';
+    const TYPE_BOUGHT = 'BOUGHT';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

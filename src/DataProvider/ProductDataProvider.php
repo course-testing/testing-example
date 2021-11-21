@@ -7,38 +7,38 @@ use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\Product;
 use App\Entity\User;
-use App\Entity\VO\Stats;
+use App\Repository\EventLogRepository;
 use App\Service\PriceFormatter\PriceFormatter;
 
 class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProviderInterface, RestrictedDataProviderInterface
 {
     private ItemDataProviderInterface $itemDataProvider;
     private PriceFormatter $priceFormatter;
+    private EventLogRepository $eventLogRepository;
 
-    public function __construct(ItemDataProviderInterface $itemDataProvider, PriceFormatter $priceFormatter)
-    {
+    public function __construct(
+        ItemDataProviderInterface $itemDataProvider,
+        PriceFormatter $priceFormatter,
+        EventLogRepository $eventLogRepository
+    ) {
         $this->itemDataProvider = $itemDataProvider;
         $this->priceFormatter = $priceFormatter;
+        $this->eventLogRepository = $eventLogRepository;
     }
 
     public function getItem(string $resourceClass, $id, string $operationName = null, array $context = [])
     {
-        /** @var Product|null $item */
-        $item = $this->itemDataProvider->getItem($resourceClass, $id, $operationName, $context);
+        /** @var Product|null $product */
+        $product = $this->itemDataProvider->getItem($resourceClass, $id, $operationName, $context);
 
-        if (!$item) {
+        if (!$product) {
             return null;
         }
 
-        $item->setFormattedPrice($this->priceFormatter->format($item->getPrice()));
+        $product->setFormattedPrice($this->priceFormatter->format($product->getPrice()));
+        $product->setStats($this->eventLogRepository->findByProductId($product->getId()));
 
-        $stats = new Stats();
-        $stats->viewed = 1001;
-        $stats->addedToCart = 89;
-        $stats->bought = 43;
-        $item->setStats($stats);
-
-        return $item;
+        return $product;
     }
 
     public function supports(string $resourceClass, string $operationName = null, array $context = []): bool
