@@ -23,6 +23,9 @@ class EventLogRepository extends ServiceEntityRepository
 
     public function findByProductId(int $productId): Stats
     {
+        /**
+         * Złożone, skomplikowane, zasobożerne, długo trwające, sięgające do odrębnej BD zapytanie...
+         */
         $result = $this->createQueryBuilder('e')
             ->select('e.eventType', 'count(e.productId) as eventsNumber')
             ->andWhere('e.productId = :productId')
