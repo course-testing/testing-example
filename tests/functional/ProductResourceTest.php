@@ -60,9 +60,9 @@ class ProductResourceTest extends ApiTestCase
                 'stats' => [
                     "@type" => "Stats",
                     "@id" => "@string@",
-                    'viewed' => 1,
-                    'addedToCart' => 2,
-                    'bought' => 3
+                    'viewed' => 100,
+                    'addedToCart' => 200,
+                    'bought' => 300
                 ]
             ],
             $response->toArray()
@@ -71,52 +71,5 @@ class ProductResourceTest extends ApiTestCase
         // zalety: testujemy cały response, test nie przejdzie po dodaniu nowego pola
         // wady: testujemy cały response, jeśli interesuje nas tylko wycinek musimy podać wszystkie pola lub użyć
         // matchera dla konkretnej wartości - test wygląda mniej spójnie
-    }
-
-    public function test_get_product_another_with_stats(): void
-    {
-        // we should create client firstly because of createClient call bootKernel
-        $client = static::createClient();
-
-        // Given There is product
-        // And Events Log
-        // api/fixtures/product.yaml
-        // api/fixtures/event-log.yaml
-        $iri = $this->findIriBy(Product::class, [
-            'name' => '__PRODUCT_2__'
-        ]);
-
-        // When I get product
-        $response = $client->request('GET', $iri);
-
-        // Then
-        $this->assertResponseIsSuccessful();
-        $this->assertMatchesPattern([
-            "@context" => "/api/contexts/products",
-            "@id" => "/api/products/2",
-            "@type" => "products",
-            "id" => 2,
-            "price" => [
-                "@type" => "Money",
-                "@id" => "@string@",
-                "amount" => 1500,
-                "currency" => "PLN",
-            ],
-            "formattedPrice" => '15.00 zł',
-            "name" => "__PRODUCT_2__",
-            "category" => [
-                0 => "main"
-            ],
-            "created" => "@datetime@",
-            'stats' => [
-                "@type" => "Stats",
-                "@id" => "@string@",
-                'viewed' => 1,
-                'addedToCart' => 0,
-                'bought' => 2
-            ]
-        ],
-            $response->toArray()
-        );
     }
 }
