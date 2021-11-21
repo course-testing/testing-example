@@ -14,7 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method EventLog[]    findAll()
  * @method EventLog[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class EventLogRepository extends ServiceEntityRepository
+class EventLogRepository extends ServiceEntityRepository implements ProductStatsRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

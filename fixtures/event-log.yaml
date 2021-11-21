@@ -5,24 +5,12 @@ App\Entity\EventLog:
   event_log2:
     eventType: VIEWED
     productId: 2
-  event_log3:
-    eventType: VIEWED
-    productId: 3
-  event_log4:
-    eventType: VIEWED
-    productId: 3
-  event_log5:
-    eventType: VIEWED
-    productId: 3
   event_log11:
     eventType: ADDED_TO_CART
     productId: 1
   event_log12:
     eventType: ADDED_TO_CART
     productId: 1
-  event_log13:
-    eventType: ADDED_TO_CART
-    productId: 3
   event_log21:
     eventType: BOUGHT
     productId: 2
@@ -31,4 +19,10 @@ App\Entity\EventLog:
     productId: 2
   event_log24:
     eventType: BOUGHT
-    productId: 3
+    productId: 1
+  event_log25:
+    eventType: BOUGHT
+    productId: 1
+  event_log26:
+    eventType: BOUGHT
+    productId: 1

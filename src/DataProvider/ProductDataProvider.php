@@ -7,23 +7,23 @@ use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\Product;
 use App\Entity\User;
-use App\Repository\EventLogRepository;
+use App\Repository\ProductStatsRepository;
 use App\Service\PriceFormatter\PriceFormatter;
 
 class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProviderInterface, RestrictedDataProviderInterface
 {
     private ItemDataProviderInterface $itemDataProvider;
     private PriceFormatter $priceFormatter;
-    private EventLogRepository $eventLogRepository;
+    private ProductStatsRepository $productStatsRepository;
 
     public function __construct(
         ItemDataProviderInterface $itemDataProvider,
         PriceFormatter $priceFormatter,
-        EventLogRepository $eventLogRepository
+        ProductStatsRepository $productStatsRepository
     ) {
         $this->itemDataProvider = $itemDataProvider;
         $this->priceFormatter = $priceFormatter;
-        $this->eventLogRepository = $eventLogRepository;
+        $this->productStatsRepository = $productStatsRepository;
     }
 
     public function getItem(string $resourceClass, $id, string $operationName = null, array $context = [])
@@ -36,7 +36,7 @@ class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProvide
         }
 
         $product->setFormattedPrice($this->priceFormatter->format($product->getPrice()));
-        $product->setStats($this->eventLogRepository->findByProductId($product->getId()));
+        $product->setStats($this->productStatsRepository->findByProductId($product->getId()));
 
         return $product;
     }
