@@ -3,12 +3,10 @@
 namespace App\Tests;
 
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
-use App\Entity\EventLog;
 use App\Entity\Product;
 use App\Event\ProductHit;
 use App\Message\ProductHitMessage;
 use Coduo\PHPMatcher\PHPUnit\PHPMatcherAssertions;
-use Doctrine\DBAL\ParameterType;
 use Hautelook\AliceBundle\PhpUnit\RefreshDatabaseTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Debug\TraceableEventDispatcher;
@@ -24,10 +22,16 @@ class ProductResourceTest extends ApiTestCase
 
     public function test_get_product_that_not_exists(): void
     {
+        $client = static::createClient();
+        $messageBus = $this->getMockBuilder(MessageBusInterface::class)
+            ->getMock();
+
+        static::getContainer()->set('messenger.bus.default', $messageBus);
+
         //Given There is not a product with ID 999
 
         //When I get product
-        static::createClient()->request('GET', '/api/products/999');
+        $client->request('GET', '/api/products/999');
 
         //Then I get 404 error
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -37,6 +41,15 @@ class ProductResourceTest extends ApiTestCase
     {
         // we should create client firstly because of createClient call bootKernel
         $client = static::createClient();
+
+        $messageBus = $this->getMockBuilder(MessageBusInterface::class)
+            ->getMock();
+
+        $messageBus
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass()));
+
+        static::getContainer()->set('messenger.bus.default', $messageBus);
 
         // Given There is product
         // api/fixtures/product.yaml
@@ -86,6 +99,10 @@ class ProductResourceTest extends ApiTestCase
     {
         // we should create client firstly because of createClient call bootKernel
         $client = static::createClient();
+        $messageBus = $this->getMockBuilder(MessageBusInterface::class)
+            ->getMock();
+
+        static::getContainer()->set('messenger.bus.default', $messageBus);
 
         // Given There is product with view stats
         // api/fixtures/product.yaml
@@ -139,5 +156,4 @@ class ProductResourceTest extends ApiTestCase
 
         //Then product hit notification sent
     }
-
 }
