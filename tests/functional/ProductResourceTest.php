@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\Client;
 use App\Entity\Product;
 use App\Event\ProductHit;
 use App\Message\ProductHitMessage;
@@ -20,18 +21,30 @@ class ProductResourceTest extends ApiTestCase
 
     const PRODUCT_ID = 1;
 
-    public function test_get_product_that_not_exists(): void
+    private Client $client;
+    private MessageBusInterface $messageBusMock;
+
+    protected function setUp(): void
     {
-        $client = static::createClient();
-        $messageBus = $this->getMockBuilder(MessageBusInterface::class)
+        // we should create client firstly (before setting on container) because of createClient call bootKernel
+        $this->client = static::createClient();
+
+        $this->messageBusMock = $this->getMockBuilder(MessageBusInterface::class)
             ->getMock();
 
-        static::getContainer()->set('messenger.bus.default', $messageBus);
+        $this->messageBusMock
+            ->method('dispatch')
+            ->willReturn(new Envelope(new \stdClass())); // Envelope jest final class - dlatego phpUnit nie potrafi zrobić domyślnie test doubla
 
+        static::getContainer()->set('messenger.bus.default', $this->messageBusMock);
+    }
+
+    public function test_get_product_that_not_exists(): void
+    {
         //Given There is not a product with ID 999
 
         //When I get product
-        $client->request('GET', '/api/products/999');
+        $this->client->request('GET', '/api/products/999');
 
         //Then I get 404 error
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -39,18 +52,6 @@ class ProductResourceTest extends ApiTestCase
 
     public function test_get_product(): void
     {
-        // we should create client firstly because of createClient call bootKernel
-        $client = static::createClient();
-
-        $messageBus = $this->getMockBuilder(MessageBusInterface::class)
-            ->getMock();
-
-        $messageBus
-            ->method('dispatch')
-            ->willReturn(new Envelope(new \stdClass()));
-
-        static::getContainer()->set('messenger.bus.default', $messageBus);
-
         // Given There is product
         // api/fixtures/product.yaml
         $iri = $this->findIriBy(Product::class, [
@@ -58,7 +59,7 @@ class ProductResourceTest extends ApiTestCase
         ]);
 
         // When I get product
-        $response = $client->request('GET', $iri);
+        $response = $this->client->request('GET', $iri);
 
         // Then
         $this->assertResponseIsSuccessful();
@@ -97,13 +98,6 @@ class ProductResourceTest extends ApiTestCase
 
     public function test_that_register_product_hit_when_get()
     {
-        // we should create client firstly because of createClient call bootKernel
-        $client = static::createClient();
-        $messageBus = $this->getMockBuilder(MessageBusInterface::class)
-            ->getMock();
-
-        static::getContainer()->set('messenger.bus.default', $messageBus);
-
         // Given There is product with view stats
         // api/fixtures/product.yaml
         $iri = $this->findIriBy(Product::class, [
@@ -111,10 +105,31 @@ class ProductResourceTest extends ApiTestCase
         ]);
 
         // When I get product
-        $client->request('GET', $iri);
+        $this->client->request('GET', $iri);
 
         // Then
        $this->assertEventHasBeenDispatched(ProductHit::NAME);
+    }
+
+    public function test_that_product_hit_notify()
+    {
+        $message = new ProductHitMessage(self::PRODUCT_ID);
+        $this->messageBusMock
+            ->expects($this->once())
+            ->method('dispatch')
+            ->with($message)
+            ->willReturn(new Envelope($message));
+
+        // Given There is product
+        // api/fixtures/product.yaml
+        $iri = $this->findIriBy(Product::class, [
+            'name' => '__PRODUCT_1__'
+        ]);
+
+        // When I get product
+        $this->client->request('GET', $iri);
+
+        //Then product hit notification sent
     }
 
     private function assertEventHasBeenDispatched(string $eventName) {
@@ -126,34 +141,5 @@ class ProductResourceTest extends ApiTestCase
         });
 
         $this->assertTrue(count($foundCalls) === 1, "${eventName} event has not been dispatched");
-    }
-
-
-    public function test_that_product_hit_notify()
-    {
-        $client = static::createClient();
-
-        $message = new ProductHitMessage(self::PRODUCT_ID);
-        $messageBus = $this->getMockBuilder(MessageBusInterface::class)
-            ->getMock();
-
-        $messageBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($message)
-            ->willReturn(new Envelope($message));
-
-        static::getContainer()->set('messenger.bus.default', $messageBus);
-
-        // Given There is product
-        // api/fixtures/product.yaml
-        $iri = $this->findIriBy(Product::class, [
-            'name' => '__PRODUCT_1__'
-        ]);
-
-        // When I get product
-        $client->request('GET', $iri);
-
-        //Then product hit notification sent
     }
 }
