@@ -109,6 +109,14 @@ class ProductResourceTest extends ApiTestCase
         // Then
         $viewedCounterAfterGet = $this->getViewedCounterByProductId($response['id']);
         $this->assertEquals($viewedCounter + 1, $viewedCounterAfterGet);
+
+        // zalety: nie testujemy ponownie logiki pobierania produktu
+        //         testujemy cały proces dodawania loga
+        //         nie couplujemy się z implementacją związaną z dodawaniem loga (gdy usuniemy mechanizm eventów i zamienimy na wywołanie metody ::save na repozytorium test nie będzie wymagał zmian)
+        // wady: bardzo mocny coupling z implementacją na potrzeby asercji
+
+        // a co jeśli dodawanie statystyk jest "ciężkim" procesem
+        // lub znajduje się w osobnym module z którym nie chcemy się couplować?
     }
 
     private function getViewedCounterByProductId(int $productId): int
