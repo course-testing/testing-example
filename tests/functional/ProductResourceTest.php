@@ -3,8 +3,10 @@
 namespace App\Tests;
 
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
+use App\Entity\EventLog;
 use App\Entity\Product;
 use Coduo\PHPMatcher\PHPUnit\PHPMatcherAssertions;
+use Doctrine\DBAL\ParameterType;
 use Hautelook\AliceBundle\PhpUnit\RefreshDatabaseTrait;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -12,6 +14,18 @@ class ProductResourceTest extends ApiTestCase
 {
     use RefreshDatabaseTrait; // oczywiście można dodawać fixtury przez Doctrine tylko trzeba pamiętać żeby to czyścić
     use PHPMatcherAssertions; // composer require --dev "coduo/php-matcher" || https://github.com/coduo/php-matcher
+
+    /** @var \Doctrine\ORM\EntityManager */
+    private $entityManager;
+
+    protected function setUp(): void
+    {
+        $kernel = self::bootKernel();
+
+        $this->entityManager = $kernel->getContainer()
+            ->get('doctrine')
+            ->getManager();
+    }
 
     public function test_get_product_that_not_exists(): void
     {
@@ -71,5 +85,60 @@ class ProductResourceTest extends ApiTestCase
         // zalety: testujemy cały response, test nie przejdzie po dodaniu nowego pola
         // wady: testujemy cały response, jeśli interesuje nas tylko wycinek musimy podać wszystkie pola lub użyć
         // matchera dla konkretnej wartości - test wygląda mniej spójnie
+    }
+
+    public function test_that_register_product_hit_when_get()
+    {
+        // we should create client firstly because of createClient call bootKernel
+        $client = static::createClient();
+
+        // Given There is product with view stats
+        // api/fixtures/product.yaml
+        $iri = $this->findIriBy(Product::class, [
+            'name' => '__PRODUCT_1__'
+        ]);
+
+        $response = $client->request('GET', $iri)
+            ->toArray();
+
+        $viewedStats = $this->entityManager->createQueryBuilder()
+            ->select('count(e.productId) as eventsNumber')
+            ->from(EventLog::class, 'e')
+            ->andWhere('e.productId = :productId')
+            ->andWhere('e.eventType = :eventType')
+            ->setParameter('productId', $response['id'], ParameterType::INTEGER)
+            ->setParameter('eventType', EventLog::TYPE_VIEWED, ParameterType::INTEGER)
+            ->getQuery()
+            ->getResult();
+
+        $viewedCounter = $viewedStats[0]['eventsNumber'];
+
+        // When I get product
+        $client->request('GET', $iri);
+
+
+        // Then
+        $viewedStats = $this->entityManager->createQueryBuilder()
+            ->select('count(e.productId) as eventsNumber')
+            ->from(EventLog::class, 'e')
+            ->andWhere('e.productId = :productId')
+            ->andWhere('e.eventType = :eventType')
+            ->setParameter('productId', $response['id'], ParameterType::INTEGER)
+            ->setParameter('eventType', EventLog::TYPE_VIEWED, ParameterType::INTEGER)
+            ->getQuery()
+            ->getResult();
+
+        $viewedCounterAfterGet = $viewedStats[0]['eventsNumber'];
+
+        $this->assertEquals($viewedCounter + 1, $viewedCounterAfterGet);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // doing this is recommended to avoid memory leaks
+        $this->entityManager->close();
+        $this->entityManager = null;
     }
 }
