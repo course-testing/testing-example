@@ -7,23 +7,28 @@ use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\Product;
 use App\Entity\User;
+use App\Event\ProductHit;
 use App\Repository\ProductStatsRepository;
 use App\Service\PriceFormatter\PriceFormatter;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProviderInterface, RestrictedDataProviderInterface
 {
     private ItemDataProviderInterface $itemDataProvider;
     private PriceFormatter $priceFormatter;
     private ProductStatsRepository $productStatsRepository;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         ItemDataProviderInterface $itemDataProvider,
         PriceFormatter $priceFormatter,
-        ProductStatsRepository $productStatsRepository
+        ProductStatsRepository $productStatsRepository,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->itemDataProvider = $itemDataProvider;
         $this->priceFormatter = $priceFormatter;
         $this->productStatsRepository = $productStatsRepository;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function getItem(string $resourceClass, $id, string $operationName = null, array $context = [])
@@ -37,6 +42,8 @@ class ProductDataProvider implements DenormalizedIdentifiersAwareItemDataProvide
 
         $product->setFormattedPrice($this->priceFormatter->format($product->getPrice()));
         $product->setStats($this->productStatsRepository->findByProductId($product->getId()));
+
+        $this->eventDispatcher->dispatch(new ProductHit($product->getId()), ProductHit::NAME);
 
         return $product;
     }
