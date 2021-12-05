@@ -101,36 +101,29 @@ class ProductResourceTest extends ApiTestCase
         $response = $client->request('GET', $iri)
             ->toArray();
 
-        $viewedStats = $this->entityManager->createQueryBuilder()
-            ->select('count(e.productId) as eventsNumber')
-            ->from(EventLog::class, 'e')
-            ->andWhere('e.productId = :productId')
-            ->andWhere('e.eventType = :eventType')
-            ->setParameter('productId', $response['id'], ParameterType::INTEGER)
-            ->setParameter('eventType', EventLog::TYPE_VIEWED, ParameterType::INTEGER)
-            ->getQuery()
-            ->getResult();
-
-        $viewedCounter = $viewedStats[0]['eventsNumber'];
+        $viewedCounter = $this->getViewedCounterByProductId($response['id']);
 
         // When I get product
         $client->request('GET', $iri);
 
-
         // Then
+        $viewedCounterAfterGet = $this->getViewedCounterByProductId($response['id']);
+        $this->assertEquals($viewedCounter + 1, $viewedCounterAfterGet);
+    }
+
+    private function getViewedCounterByProductId(int $productId): int
+    {
         $viewedStats = $this->entityManager->createQueryBuilder()
             ->select('count(e.productId) as eventsNumber')
             ->from(EventLog::class, 'e')
             ->andWhere('e.productId = :productId')
             ->andWhere('e.eventType = :eventType')
-            ->setParameter('productId', $response['id'], ParameterType::INTEGER)
+            ->setParameter('productId', $productId, ParameterType::INTEGER)
             ->setParameter('eventType', EventLog::TYPE_VIEWED, ParameterType::INTEGER)
             ->getQuery()
             ->getResult();
 
-        $viewedCounterAfterGet = $viewedStats[0]['eventsNumber'];
-
-        $this->assertEquals($viewedCounter + 1, $viewedCounterAfterGet);
+        return $viewedStats[0]['eventsNumber'];
     }
 
     protected function tearDown(): void
