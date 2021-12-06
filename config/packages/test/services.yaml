@@ -1,2 +1,4 @@
 services:
   App\Repository\ProductStatsRepository: '@App\Repository\FakeEventLogRepository'
+
+  Symfony\Component\EventDispatcher\EventDispatcherInterface: '@debug.event_dispatcher'

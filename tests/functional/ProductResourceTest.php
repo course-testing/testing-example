@@ -5,10 +5,12 @@ namespace App\Tests;
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
 use App\Entity\EventLog;
 use App\Entity\Product;
+use App\Event\ProductHit;
 use Coduo\PHPMatcher\PHPUnit\PHPMatcherAssertions;
 use Doctrine\DBAL\ParameterType;
 use Hautelook\AliceBundle\PhpUnit\RefreshDatabaseTrait;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Debug\TraceableEventDispatcher;
 
 class ProductResourceTest extends ApiTestCase
 {
@@ -116,7 +118,36 @@ class ProductResourceTest extends ApiTestCase
         // wady: bardzo mocny coupling z implementacją na potrzeby asercji
 
         // a co jeśli dodawanie statystyk jest "ciężkim" procesem
-        // lub znajduje się w osobnym module z którym nie chcemy się couplować?
+        // lub znajduje się w osobnym module, z którym nie chcemy się couplować?
+    }
+
+    public function test_that_register_product_hit_when_get_v2()
+    {
+        // we should create client firstly because of createClient call bootKernel
+        $client = static::createClient();
+
+        // Given There is product with view stats
+        // api/fixtures/product.yaml
+        $iri = $this->findIriBy(Product::class, [
+            'name' => '__PRODUCT_1__'
+        ]);
+
+        // When I get product
+        $client->request('GET', $iri);
+
+        // Then
+       $this->assertEventHasBeenDispatched(ProductHit::NAME);
+    }
+
+    private function assertEventHasBeenDispatched(string $eventName) {
+        /** @var TraceableEventDispatcher $dispatcher */
+        $dispatcher = static::getContainer()->get('debug.event_dispatcher');
+
+        $foundCalls = array_filter($dispatcher->getCalledListeners(), function($registeredCall) use ($eventName) {
+            return $registeredCall['event'] === $eventName;
+        });
+
+        $this->assertTrue(count($foundCalls) === 1, "${eventName} event has not been dispatched");
     }
 
     private function getViewedCounterByProductId(int $productId): int
