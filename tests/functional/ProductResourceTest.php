@@ -17,18 +17,6 @@ class ProductResourceTest extends ApiTestCase
     use RefreshDatabaseTrait; // oczywiście można dodawać fixtury przez Doctrine tylko trzeba pamiętać żeby to czyścić
     use PHPMatcherAssertions; // composer require --dev "coduo/php-matcher" || https://github.com/coduo/php-matcher
 
-    /** @var \Doctrine\ORM\EntityManager */
-    private $entityManager;
-
-    protected function setUp(): void
-    {
-        $kernel = self::bootKernel();
-
-        $this->entityManager = $kernel->getContainer()
-            ->get('doctrine')
-            ->getManager();
-    }
-
     public function test_get_product_that_not_exists(): void
     {
         //Given There is not a product with ID 999
@@ -100,38 +88,6 @@ class ProductResourceTest extends ApiTestCase
             'name' => '__PRODUCT_1__'
         ]);
 
-        $response = $client->request('GET', $iri)
-            ->toArray();
-
-        $viewedCounter = $this->getViewedCounterByProductId($response['id']);
-
-        // When I get product
-        $client->request('GET', $iri);
-
-        // Then
-        $viewedCounterAfterGet = $this->getViewedCounterByProductId($response['id']);
-        $this->assertEquals($viewedCounter + 1, $viewedCounterAfterGet);
-
-        // zalety: nie testujemy ponownie logiki pobierania produktu
-        //         testujemy cały proces dodawania loga
-        //         nie couplujemy się z implementacją związaną z dodawaniem loga (gdy usuniemy mechanizm eventów i zamienimy na wywołanie metody ::save na repozytorium test nie będzie wymagał zmian)
-        // wady: bardzo mocny coupling z implementacją na potrzeby asercji
-
-        // a co jeśli dodawanie statystyk jest "ciężkim" procesem
-        // lub znajduje się w osobnym module, z którym nie chcemy się couplować?
-    }
-
-    public function test_that_register_product_hit_when_get_v2()
-    {
-        // we should create client firstly because of createClient call bootKernel
-        $client = static::createClient();
-
-        // Given There is product with view stats
-        // api/fixtures/product.yaml
-        $iri = $this->findIriBy(Product::class, [
-            'name' => '__PRODUCT_1__'
-        ]);
-
         // When I get product
         $client->request('GET', $iri);
 
@@ -150,27 +106,4 @@ class ProductResourceTest extends ApiTestCase
         $this->assertTrue(count($foundCalls) === 1, "${eventName} event has not been dispatched");
     }
 
-    private function getViewedCounterByProductId(int $productId): int
-    {
-        $viewedStats = $this->entityManager->createQueryBuilder()
-            ->select('count(e.productId) as eventsNumber')
-            ->from(EventLog::class, 'e')
-            ->andWhere('e.productId = :productId')
-            ->andWhere('e.eventType = :eventType')
-            ->setParameter('productId', $productId, ParameterType::INTEGER)
-            ->setParameter('eventType', EventLog::TYPE_VIEWED, ParameterType::INTEGER)
-            ->getQuery()
-            ->getResult();
-
-        return $viewedStats[0]['eventsNumber'];
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        // doing this is recommended to avoid memory leaks
-        $this->entityManager->close();
-        $this->entityManager = null;
-    }
 }
